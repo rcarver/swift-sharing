@@ -148,13 +148,23 @@ final class _BoxReference<Value>: MutableReference, Observable, Perceptible, @un
     _ mutation: () throws -> MutationResult
   ) rethrows -> MutationResult {
     #if os(WASI)
-      return try _$perceptionRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
-    #else
-      if Thread.isMainThread {
+      if !(value is ObservableValue) {
         return try _$perceptionRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
       } else {
-        DispatchQueue.main.async {
-          self._$perceptionRegistrar.withMutation(of: self, keyPath: keyPath) {}
+        return try mutation()
+      }
+    #else
+      if Thread.isMainThread {
+        if !(value is ObservableValue) {
+          return try _$perceptionRegistrar.withMutation(of: self, keyPath: keyPath, mutation)
+        } else {
+          return try mutation()
+        }
+      } else {
+        if !(value is ObservableValue) {
+          DispatchQueue.main.async {
+            self._$perceptionRegistrar.withMutation(of: self, keyPath: keyPath) {}
+          }
         }
         return try mutation()
       }
