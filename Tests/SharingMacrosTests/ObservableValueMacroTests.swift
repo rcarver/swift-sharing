@@ -1,21 +1,24 @@
 #if canImport(SharingMacros)
   import MacroTesting
   import SharingMacros
+  import SnapshotTesting
   import SwiftSyntaxMacros
   import SwiftSyntaxMacrosTestSupport
   import XCTest
 
-  final class ObservableStateMacroTests: MacroBaseTestCase {
+  final class ObservableValueMacroTests: MacroBaseTestCase {
     override func invokeTest() {
-      withMacroTesting {
-        super.invokeTest()
+      withSnapshotTesting(record: .failed) {
+        withMacroTesting {
+          super.invokeTest()
+        }
       }
     }
 
     func testAvailability() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         @available(iOS 18, *)
         struct State {
           var count = 0
@@ -35,20 +38,20 @@
               return _count
             }
             set {
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$sharing_isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
               defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$sharing_isIdentityEqual)
               }
               yield &_count
             }
           }
 
-          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = Sharing.ObservationValueRegistrar()
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             _$observationRegistrar.id
           }
 
@@ -60,10 +63,10 @@
       }
     }
 
-    func testObservableState() throws {
+    func testObservableValue() throws {
       assertMacro {
         #"""
-        @ObservableState
+        @ObservableValue
         struct State {
           var count = 0
         }
@@ -81,20 +84,20 @@
               return _count
             }
             set {
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$sharing_isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
               defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$sharing_isIdentityEqual)
               }
               yield &_count
             }
           }
 
-          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = Sharing.ObservationValueRegistrar()
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             _$observationRegistrar.id
           }
 
@@ -106,10 +109,10 @@
       }
     }
 
-    func testObservableState_AccessControl() throws {
+    func testObservableValue_AccessControl() throws {
       assertMacro {
         #"""
-        @ObservableState
+        @ObservableValue
         public struct State {
           var count = 0
         }
@@ -127,20 +130,20 @@
               return _count
             }
             set {
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$sharing_isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
               defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$sharing_isIdentityEqual)
               }
               yield &_count
             }
           }
 
-          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = Sharing.ObservationValueRegistrar()
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             _$observationRegistrar.id
           }
 
@@ -152,7 +155,7 @@
       }
       assertMacro {
         #"""
-        @ObservableState
+        @ObservableValue
         package struct State {
           var count = 0
         }
@@ -170,20 +173,20 @@
               return _count
             }
             set {
-              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$isIdentityEqual)
+              _$observationRegistrar.mutate(self, keyPath: \.count, &_count, newValue, _$sharing_isIdentityEqual)
             }
             _modify {
               let oldValue = _$observationRegistrar.willModify(self, keyPath: \.count, &_count)
               defer {
-                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$isIdentityEqual)
+                _$observationRegistrar.didModify(self, keyPath: \.count, &_count, oldValue, _$sharing_isIdentityEqual)
               }
               yield &_count
             }
           }
 
-          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = Sharing.ObservationValueRegistrar()
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             _$observationRegistrar.id
           }
 
@@ -195,12 +198,12 @@
       }
     }
 
-    func testObservableStateIgnored() throws {
+    func testObservableValueIgnored() throws {
       assertMacro {
         #"""
-        @ObservableState
+        @ObservableValue
         struct State {
-          @ObservationStateIgnored
+          @ObservationValueIgnored
           var count = 0
         }
         """#
@@ -209,9 +212,9 @@
         struct State {
           var count = 0
 
-          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = Sharing.ObservationValueRegistrar()
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             _$observationRegistrar.id
           }
 
@@ -223,10 +226,10 @@
       }
     }
 
-    func testObservableState_Enum() {
+    func testObservableValue_Enum() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         enum Path {
           case feature1(Feature1.State)
           case feature2(Feature2.State)
@@ -238,7 +241,7 @@
           case feature1(Feature1.State)
           case feature2(Feature2.State)
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             switch self {
             case let .feature1(state):
               return ._$id(for: state)._$tag(0)
@@ -250,10 +253,10 @@
           public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .feature1(state)
             case var .feature2(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .feature2(state)
             }
           }
@@ -262,10 +265,10 @@
       }
     }
 
-    func testObservableState_Enum_Label() {
+    func testObservableValue_Enum_Label() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         enum Path {
           case feature1(state: String)
         }
@@ -275,7 +278,7 @@
         enum Path {
           case feature1(state: String)
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             switch self {
             case let .feature1(state):
               return ._$id(for: state)._$tag(0)
@@ -285,7 +288,7 @@
           public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .feature1(state: state)
             }
           }
@@ -294,10 +297,10 @@
       }
     }
 
-    func testObservableState_Enum_AccessControl() {
+    func testObservableValue_Enum_AccessControl() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         public enum Path {
           case feature1(Feature1.State)
           case feature2(Feature2.State)
@@ -309,7 +312,7 @@
           case feature1(Feature1.State)
           case feature2(Feature2.State)
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             switch self {
             case let .feature1(state):
               return ._$id(for: state)._$tag(0)
@@ -321,10 +324,10 @@
           public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .feature1(state)
             case var .feature2(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .feature2(state)
             }
           }
@@ -333,7 +336,7 @@
       }
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         package enum Path {
           case feature1(Feature1.State)
           case feature2(Feature2.State)
@@ -345,7 +348,7 @@
           case feature1(Feature1.State)
           case feature2(Feature2.State)
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             switch self {
             case let .feature1(state):
               return ._$id(for: state)._$tag(0)
@@ -357,10 +360,10 @@
           public mutating func _$willModify() {
             switch self {
             case var .feature1(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .feature1(state)
             case var .feature2(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .feature2(state)
             }
           }
@@ -369,11 +372,11 @@
       }
     }
 
-    func testObservableState_Enum_AccessControl_WrappedByExtension() {
+    func testObservableValue_Enum_AccessControl_WrappedByExtension() {
       assertMacro {
         """
         public extension Feature {
-          @ObservableState
+          @ObservableValue
           enum Path {
             case feature1(Feature1.State)
             case feature2(Feature2.State)
@@ -387,7 +390,7 @@
             case feature1(Feature1.State)
             case feature2(Feature2.State)
 
-            public var _$id: ComposableArchitecture.ObservableStateID {
+            public var _$id: Sharing.ObservableValueID {
               switch self {
               case let .feature1(state):
                 return ._$id(for: state)._$tag(0)
@@ -399,10 +402,10 @@
             public mutating func _$willModify() {
               switch self {
               case var .feature1(state):
-                ComposableArchitecture._$willModify(&state)
+                Sharing._$willModify(&state)
                 self = .feature1(state)
               case var .feature2(state):
-                ComposableArchitecture._$willModify(&state)
+                Sharing._$willModify(&state)
                 self = .feature2(state)
               }
             }
@@ -413,7 +416,7 @@
       assertMacro {
         """
         public extension Feature {
-          @ObservableState
+          @ObservableValue
           package enum Path {
             case feature1(Feature1.State)
             case feature2(Feature2.State)
@@ -427,7 +430,7 @@
             case feature1(Feature1.State)
             case feature2(Feature2.State)
 
-            public var _$id: ComposableArchitecture.ObservableStateID {
+            public var _$id: Sharing.ObservableValueID {
               switch self {
               case let .feature1(state):
                 return ._$id(for: state)._$tag(0)
@@ -439,10 +442,10 @@
             public mutating func _$willModify() {
               switch self {
               case var .feature1(state):
-                ComposableArchitecture._$willModify(&state)
+                Sharing._$willModify(&state)
                 self = .feature1(state)
               case var .feature2(state):
-                ComposableArchitecture._$willModify(&state)
+                Sharing._$willModify(&state)
                 self = .feature2(state)
               }
             }
@@ -452,10 +455,10 @@
       }
     }
 
-    func testObservableState_Enum_NonObservableCase() {
+    func testObservableValue_Enum_NonObservableCase() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         public enum Path {
           case foo(Int)
         }
@@ -465,7 +468,7 @@
         public enum Path {
           case foo(Int)
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             switch self {
             case let .foo(state):
               return ._$id(for: state)._$tag(0)
@@ -475,7 +478,7 @@
           public mutating func _$willModify() {
             switch self {
             case var .foo(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .foo(state)
             }
           }
@@ -484,10 +487,10 @@
       }
     }
 
-    func testObservableState_Enum_MultipleAssociatedValues() {
+    func testObservableValue_Enum_MultipleAssociatedValues() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         public enum Path {
           case foo(Int, String)
         }
@@ -497,10 +500,10 @@
         public enum Path {
           case foo(Int, String)
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             switch self {
             case .foo:
-              return ObservableStateID()._$tag(0)
+              return ObservableValueID()._$tag(0)
             }
           }
 
@@ -515,46 +518,46 @@
       }
     }
 
-    func testObservableState_Class() {
+    func testObservableValue_Class() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         public class Model {
         }
         """
       } diagnostics: {
         """
-        @ObservableState
+        @ObservableValue
         ┬───────────────
-        ╰─ 🛑 '@ObservableState' cannot be applied to class type 'Model'
+        ╰─ 🛑 '@ObservableValue' cannot be applied to class type 'Model'
         public class Model {
         }
         """
-      }
+      } 
     }
 
-    func testObservableState_Actor() {
+    func testObservableValue_Actor() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         public actor Model {
         }
         """
       } diagnostics: {
         """
-        @ObservableState
+        @ObservableValue
         ┬───────────────
-        ╰─ 🛑 '@ObservableState' cannot be applied to actor type 'Model'
+        ╰─ 🛑 '@ObservableValue' cannot be applied to actor type 'Model'
         public actor Model {
         }
         """
-      }
+      } 
     }
 
-    func testObservableState_Enum_IfConfig() {
+    func testObservableValue_Enum_IfConfig() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         public enum State {
           case child(ChildFeature.State)
           #if os(macOS)
@@ -586,7 +589,7 @@
             #endif
           #endif
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             switch self {
             case let .child(state):
               return ._$id(for: state)._$tag(0)
@@ -611,22 +614,22 @@
           public mutating func _$willModify() {
             switch self {
             case var .child(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .child(state)
             #if os(macOS)
             case var .mac(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .mac(state)
             #elseif os(tvOS)
             case var .tv(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .tv(state)
             #endif
 
             #if DEBUG
             #if INNER
             case var .inner(state):
-              ComposableArchitecture._$willModify(&state)
+              Sharing._$willModify(&state)
               self = .inner(state)
             #endif
             #endif
@@ -641,7 +644,7 @@
     func testKnownSupportedPropertyWrappers() {
       assertMacro {
         """
-        @ObservableState
+        @ObservableValue
         struct State {
           @Shared var shared: Int
           @SharedReader var sharedReader: Int
@@ -664,9 +667,9 @@
           @FetchOne
           var fetchOne: Int
 
-          var _$observationRegistrar = ComposableArchitecture.ObservationStateRegistrar()
+          var _$observationRegistrar = Sharing.ObservationValueRegistrar()
 
-          public var _$id: ComposableArchitecture.ObservableStateID {
+          public var _$id: Sharing.ObservableValueID {
             _$observationRegistrar.id
           }
 
