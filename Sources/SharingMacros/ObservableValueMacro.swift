@@ -611,14 +611,14 @@ public struct ObservationValueTrackedMacro: AccessorMacro {
     let setAccessor: AccessorDeclSyntax =
       """
       set {
-      \(raw: ObservableValueMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$isIdentityEqual)
+      \(raw: ObservableValueMacro.registrarVariableName).mutate(self, keyPath: \\.\(identifier), &_\(identifier), newValue, _$sharing_isIdentityEqual)
       }
       """
     let modifyAccessor: AccessorDeclSyntax = """
       _modify {
         let oldValue = _$observationRegistrar.willModify(self, keyPath: \\.\(identifier), &_\(identifier))
         defer {
-          _$observationRegistrar.didModify(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$isIdentityEqual)
+          _$observationRegistrar.didModify(self, keyPath: \\.\(identifier), &_\(identifier), oldValue, _$sharing_isIdentityEqual)
         }
         yield &_\(identifier)
       }
