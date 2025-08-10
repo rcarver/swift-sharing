@@ -1,5 +1,6 @@
 // swift-tools-version: 6.0
 
+import CompilerPluginSupport
 import PackageDescription
 
 let package = Package(
@@ -22,9 +23,11 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.5.1"),
     .package(url: "https://github.com/pointfreeco/swift-identified-collections", from: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.3"),
     .package(url: "https://github.com/pointfreeco/swift-perception", "1.4.1"..<"3.0.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.4.3"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.0.0"),
+    .package(url: "https://github.com/swiftlang/swift-syntax", "509.0.0"..<"602.0.0"),
   ],
   targets: [
     .target(
@@ -32,6 +35,7 @@ let package = Package(
       dependencies: [
         "Sharing1",
         "Sharing2",
+        "SharingMacros",
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
@@ -51,6 +55,20 @@ let package = Package(
         .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
       ],
       exclude: ["Sharing.xctestplan"]
+    ),
+    .macro(
+      name: "SharingMacros",
+      dependencies: [
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+      ]
+    ),
+    .testTarget(
+      name: "SharingMacrosTests",
+      dependencies: [
+        "SharingMacros",
+        .product(name: "MacroTesting", package: "swift-macro-testing"),
+      ]
     ),
     .target(
       name: "Sharing1",
